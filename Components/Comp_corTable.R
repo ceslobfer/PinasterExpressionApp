@@ -8,29 +8,49 @@ module_dataE <- read.csv("www/seq_module_file_Embryos.txt", sep = "\t",col.names
 tablaSeqDesRoots <- read.csv("www/seq_description_raiz.txt", sep = "\t",col.names = c("seq","description"), row.names = 1,stringsAsFactors = F)
 hubsEmbrio <- read.csv("www/hubModule.txt", sep = "\t",col.names = c("seqName","module"),stringsAsFactors = F)
 
-#seq <- "ppt_55700"
+seq <- "ppt_66674"
 seqCorEmbryos <- function(seq){
   tablaCor <- data.frame(stringsAsFactors = F)
   seqQuery <- as.numeric(datosEmbriones[seq,])
-  moduleSeq <- module_dataE[which(module_dataE$seqName == seq),2]
-  print(moduleSeq)
-  tablaModule <- module_dataE[which(module_dataE$module == moduleSeq),]
-  for (seq2 in tablaModule$seqName) {
-    if (seq2!=seq) {
-      correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
-      if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
-        tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
-      }
-      if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
-        tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
+  if (seq %in% module_dataE$seqName) {
+    moduleSeq <- module_dataE[which(module_dataE$seqName == seq),2]
+    print(moduleSeq)
+    tablaModule <- module_dataE[which(module_dataE$module == moduleSeq),]
+    for (seq2 in tablaModule$seqName) {
+      if (seq2!=seq) {
+        correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
+        if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
+          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
+        }
+        if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
+          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
+        }
       }
     }
+    
+    colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","HUBGENE")
+    tablaCor <- transform(tablaCor, Correlation.value = as.numeric(Correlation.value))
+    tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
+    tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
+  }else{
+    for (seq2 in row.names(datosEmbriones)) {
+      if (seq2!=seq) {
+        correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
+        if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
+          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
+        }
+        if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
+          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
+        }
+      }
+    }
+    
+    colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","HUBGENE")
+    tablaCor <- transform(tablaCor, Correlation.value = as.numeric(Correlation.value))
+    tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
+    tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
   }
   
-  colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","HUBGENE")
-  tablaCor <- transform(tablaCor, Correlation.value = as.numeric(Correlation.value))
-  tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
-  tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
   return(tablaCor)
 }
 
