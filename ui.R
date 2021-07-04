@@ -17,7 +17,7 @@ datosEmbriones <- read.csv("www/CPM_embriones_media_filter.txt", sep = "\t", row
 library(shiny)
 
 source("Components/Comp_embryos.R")
-shinyUI(fluidPage(theme = shinytheme("cyborg"),setBackgroundImage(src = "wallpaper.jpg", shinydashboard = F),
+shinyUI(fluidPage(title = "BIO114",theme = shinytheme("cyborg"),setBackgroundImage(src = "wallpaper.jpg", shinydashboard = F),
                   tags$style(HTML("td {
   border: 1px solid black;
 }")),
@@ -158,7 +158,16 @@ shinyUI(fluidPage(theme = shinytheme("cyborg"),setBackgroundImage(src = "wallpap
                                                 ),mainPanel(
                                                   DT::dataTableOutput("searchGO_R") %>% withSpinner(color="#0dc5c1")
                                                 )
-                                      )  )
+                                      )
+                                      # ,tabPanel("BLAST search",br(),
+                                      #            sidebarPanel(
+                                      #              textAreaInput("sequenceNUCL_r",p("Nucleotide sequences:",style="color:white; text-align:center")),width = 12
+                                      #            ),mainPanel(br(),
+                                      #              DT::dataTableOutput("bastSearch") %>% withSpinner(color="#0dc5c1"),
+                                      #              br(),
+                                      #            )
+                                      # )
+                                      )
                                       
                              ),
                              

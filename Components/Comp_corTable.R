@@ -4,21 +4,30 @@ RC_data <- read.csv("www/CPM_raizMicrodiseccion_RC_mean.txt", sep = "\t", row.na
 RDV_data <- read.csv("www/CPM_raizMicrodiseccion_RDV_mean.txt", sep = "\t", row.names = 1, stringsAsFactors = F )
 RDC_data <- read.csv("www/CPM_raizMicrodiseccion_RDC_mean.txt", sep = "\t", row.names = 1, stringsAsFactors = F )
 RM_data <- read.csv("www/CPM_raizMicrodiseccion_RM_mean.txt", sep = "\t", row.names = 1, stringsAsFactors = F )
+module_dataE <- read.csv("www/seq_module_file_Embryos.txt", sep = "\t",col.names = c("seqName","module"), stringsAsFactors = F )
 tablaSeqDesRoots <- read.csv("www/seq_description_raiz.txt", sep = "\t",col.names = c("seq","description"), row.names = 1,stringsAsFactors = F)
+hubsEmbrio <- read.csv("www/hubModule.txt", sep = "\t",col.names = c("seqName","module"),stringsAsFactors = F)
 
-
+#seq <- "ppt_55700"
 seqCorEmbryos <- function(seq){
   tablaCor <- data.frame(stringsAsFactors = F)
   seqQuery <- as.numeric(datosEmbriones[seq,])
-  for (seq2 in row.names(datosEmbriones)) {
+  moduleSeq <- module_dataE[which(module_dataE$seqName == seq),2]
+  print(moduleSeq)
+  tablaModule <- module_dataE[which(module_dataE$module == moduleSeq),]
+  for (seq2 in tablaModule$seqName) {
     if (seq2!=seq) {
       correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
-      if (correlation$p.value < 0.05){
-        tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value),stringsAsFactors = F)
+      if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
+        tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
+      }
+      if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
+        tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
       }
     }
   }
-  colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue")
+  
+  colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","HUBGENE")
   tablaCor <- transform(tablaCor, Correlation.value = as.numeric(Correlation.value))
   tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
   tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
@@ -26,11 +35,6 @@ seqCorEmbryos <- function(seq){
 }
 
 
-filterTableCor <- function(tablaCor, corteCorr, cortePvalue){
-  tablaCor <- tablaCor[which(abs(tablaCor$Correlation.value)>corteCorr & tablaCor$Correlation.pvalue<cortePvalue),]
-  tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
-  return(tablaCor)
-}
 
 expressionRoots <- function(seq){
   RC_C <- RC_data[seq,"RC_C"]

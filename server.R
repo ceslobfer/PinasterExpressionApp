@@ -26,6 +26,7 @@ source("Components/Comp_embryos.R")
 source("Components/Comp_barplot.R")
 source("Components/Comp_corTable.R")
 source("Components/Comp_roots.R")
+source("Components/Comp_blast.R")
 shinyServer(function(input, output) {
     
     output$RawData <- DT::renderDataTable(
@@ -105,6 +106,20 @@ shinyServer(function(input, output) {
         
     })
     
+#Blast search Roots
+    # output$bastSearch <- DT::renderDataTable({
+    #     DT::datatable(blast_raiz(input$sequenceNUCL_r),options = list(initComplete = JS(
+    #         "function(settings, json) {",
+    #         "$(this.api().table().header()).css({'background-color': #1c1b1b', 'color': '#1c1b1b'});",
+    #         "}")),
+    #         filter = "top",
+    #         selection = 'multiple',
+    #         style = 'bootstrap',
+    #         class = 'cell-border stripe',
+    #         rownames = FALSE,
+    #     )
+    # })
+    
 #Slider imagenes
     output$slickr <- renderSlickR({
         imgs <- list.files("www/fotosSlider/", pattern=".jpg", full.names = TRUE)
@@ -117,26 +132,24 @@ shinyServer(function(input, output) {
     })
     
     newCorTable <- eventReactive(input$buttonCorE, {
-        tablaCorResE <- NULL
         if (input$seqID %in% row.names(datosEmbriones)){
             tableCor <- seqCorEmbryos(input$seqID)
-            tablaCorResE<- filterTableCor(tableCor,input$CorteCorE,input$CortePvalueE)
-            
+            tableCor
         }
-        tablaCorResE
     })
 
     
     output$tableCorE <- DT::renderDataTable({
-        DT::datatable(newCorTable(),options = list(initComplete = JS(
-                                                       "function(settings, json) {",
-                                                       "$(this.api().table().header()).css({'background-color': #1c1b1b', 'color': '#1c1b1b'});",
-                                                       "}")),
-                      filter = "top",
-                      selection = 'multiple',
-                      style = 'bootstrap',
-                      class = 'cell-border stripe',
-                      rownames = FALSE,
+        table <- newCorTable()
+        DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
+            "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
+            filter = "top",
+            selection = 'multiple',
+            style = 'bootstrap',
+            class = 'cell-border stripe',
+            rownames = FALSE,
         )
     })
     
@@ -151,10 +164,11 @@ shinyServer(function(input, output) {
     
     output$tableCorR <- DT::renderDataTable({
         if (input$seqID_R %in% row.names(RM_data)){
-            DT::datatable(newCorTableR(),options = list(initComplete = JS(
+            table <- newCorTableR()
+            DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
                 "function(settings, json) {",
                 "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
-                "}")),
+                "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
                 filter = "top",
                 selection = 'multiple',
                 style = 'bootstrap',
@@ -165,10 +179,11 @@ shinyServer(function(input, output) {
     })
     
     output$searchGO_E <- DT::renderDataTable({
-        DT::datatable(searchGoSeq(input$goE),options = list(initComplete = JS(
+        table <- searchGoSeq(input$goE)
+        DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
             "function(settings, json) {",
             "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
-            "}")),
+            "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
             filter = "top",
             selection = 'multiple',
             style = 'bootstrap',
@@ -177,10 +192,11 @@ shinyServer(function(input, output) {
         )
     })
     output$searchGO_R <- DT::renderDataTable({
-        DT::datatable(searchGoSeqR(input$goR),options = list(initComplete = JS(
+        table<-searchGoSeqR(input$goR)
+        DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
             "function(settings, json) {",
             "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
-            "}")),
+            "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
             filter = "top",
             selection = 'multiple',
             style = 'bootstrap',
