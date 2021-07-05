@@ -247,6 +247,13 @@ shinyServer(function(input, output) {
                 width=12,style="background-color:black;border-radius: 8px")
         }
     })
+    output$descriptionSeqN <- renderUI({
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            column(
+                h5(p(tablaSeqDes[input$seqID_N,],style="color:white;text-align:center")),
+                width=12,style="background-color:black;border-radius: 8px")
+        }
+    })
 #Barplot Embriones    
     hide("barplotEmbryos")
     output$barplotEmbryos <- renderPlot({
