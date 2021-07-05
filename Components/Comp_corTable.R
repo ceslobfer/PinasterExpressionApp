@@ -7,6 +7,7 @@ RM_data <- read.csv("www/CPM_raizMicrodiseccion_RM_mean.txt", sep = "\t", row.na
 module_dataE <- read.csv("www/seq_module_file_Embryos.txt", sep = "\t",col.names = c("seqName","module"), stringsAsFactors = F )
 tablaSeqDesRoots <- read.csv("www/seq_description_raiz.txt", sep = "\t",col.names = c("seq","description"), row.names = 1,stringsAsFactors = F)
 hubsEmbrio <- read.csv("www/hubModule.txt", sep = "\t",col.names = c("seqName","module"),stringsAsFactors = F)
+goEmbrios <- read.csv("www/seq_go_embrios_join.txt", sep = "\t",col.names = c("seqName","go"),row.names = 1,stringsAsFactors = F)
 
 seq <- "ppt_66674"
 seqCorEmbryos <- function(seq){
@@ -20,15 +21,26 @@ seqCorEmbryos <- function(seq){
       if (seq2!=seq) {
         correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
         if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
-          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
+          if (seq2 %in% row.names(goEmbrios)) {
+            tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,goEmbrios[seq2,],TRUE),stringsAsFactors = F)
+            
+          }else{
+            tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,"",TRUE),stringsAsFactors = F)
+            
+          }
         }
         if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
-          tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
-        }
+          if (seq2 %in% row.names(goEmbrios)) {
+            tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,goEmbrios[seq2,],FALSE),stringsAsFactors = F)
+            
+          }else{
+            tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,"",FALSE),stringsAsFactors = F)
+            
+          }        }
       }
     }
     
-    colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","HUBGENE")
+    colnames(tablaCor) <- c("Sequence.ID","Blast.description","Correlation.value","Correlation.pvalue","GO_IDs","HUBGENE")
     tablaCor <- transform(tablaCor, Correlation.value = as.numeric(Correlation.value))
     tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
     tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]

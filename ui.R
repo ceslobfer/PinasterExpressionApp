@@ -171,83 +171,57 @@ shinyUI(fluidPage(title = "BIO114",theme = shinytheme("cyborg"),setBackgroundIma
                                       
                              ),
                              
-                             tabPanel("Step 3",
+                             tabPanel("Needles",
                                       
-                                      fluidRow(column(width=2),
-                                               column(
-                                                   h4(p("Multicollinearity",style="color:black;text-align:center")),
-                                                   width=8,style="background-color:lavender;border-radius: 10px")),
-                                      br(),
-                                      fluidRow(column(width=2, icon("hand-point-right","fa-5x"),align="center"),
-                                               column(
-                                                   p("In this step we are going to use the variance inflation factor (VIF) to 
-                                     make sure that we do not have two or more independent variables in our 
-                                     database that predict each other, that is, they provide the same information
-                                     to our model. We will run several regression models alternating the response 
-                                     variable, using each of the independent variables instead and using the 
-                                     following formula to calculate the VIF:",style="color:black;text-align:justify"),
-                                                   p('$$VIF_i=\\frac{1}{1-R_i^2}$$',style="color:black;border:1px solid black;background-color:white"),
-                                                   p("Read more about this topic here → ", a(href="https://en.wikipedia.org/wiki/Multicollinearity",icon("wikipedia-w"),target="_blank"),style="color:black;text-align:center"),
-                                                   p("That is, if the coefficient of determination tends to 1 it is because the independent
-                                     variable i, is predicted through the other independent variables with an important 
-                                     degree of precision. This makes the VIF greater. If the VIF exceeds 5 points (this 
-                                     depends on the criterion and the author) should be applied remedial measures to the
-                                     variables involved (eliminate them or put them together through indicators).",style="color:black;text-align:justify"),
-                                                   width=8,style="background-color:lavender;border-radius: 10px")),
-                                      br(),
-                                      fluidRow(column(width=2),
-                                               column(
-                                                   p("Let's do this. Select the independent variables that you would like to include in the model and observe what happens with the VIF",style="color:black; text-align:center"),width = 8,style="background-color:papayawhip; border-radius: 10px"
-                                               )),
-                                      hr(),
-                                      sidebarLayout(
+                                      tabsetPanel(
+                                        tabPanel("Expression View",br(),sidebarLayout(
                                           
                                           sidebarPanel(
-                                              
-                                              tags$head(tags$style("#AdjustedDetermination{color: black;
-                                                                        text-align: center;
-                                                                        }")),
-                                              
-                                              
-                                              checkboxGroupInput("variablescuantis",p("Select the independent variables you would like to include:",style="color:coral"),choices = c("Projected population"=1,"Thefts"=2,"Traffic accidents"=3,"Homicides"=4,"School deserters"=5,"Sports venues"=6,"Extortions"=7),selected = c("Projected population"=1,"Thefts"=2,"Traffic accidents"=3,"Homicides"=4,"School deserters"=5,"Sports venues"=6,"Extortions"=7)),
-                                              hr(),
-                                              br(),
-                                              br(),
-                                              fluidRow(column(width=1),
-                                                       column(br(),br(),
-                                                              textOutput("AdjustedDetermination"),
-                                                              br(),
-                                                              br(),width=10,style="background-color:papayawhip;border-left:8px solid coral;border-top: 1px solid black;border-right:1px solid black;border-bottom: 1px solid black"))
-                                              
+                                            
+                                            textInput("seqID_N",p("ID gene database:",style="color:white; text-align:center")),
+                                            imageOutput("legendtHeatN",height = "150px"),
+                                            br(),
+                                            textInput("keggIDN",p("Kegg ID:",style="color:white; text-align:center")),
+                                            tableOutput("tableKeggSeqN"),
+                                            
+                                            width = 3
                                           ),
                                           mainPanel(
-                                              tags$head(tags$style("#Model1{height: 250px;width:auto;border: 1px solid black; background-color: lavender}")),
-                                              tags$head(tags$style("#VIF{height: 150px;width:auto;border: 1px solid black; background-color: #BFF7BB}")),
-                                              tags$head(tags$style("#Alarm{color:black;text-align:center}")),
-                                              tags$head(tags$style("#Determination{color:black;text-align:center}")),
+                                            fluidRow(
+                                              uiOutput("descriptionSeqN"),br()
+                                            ),
+                                            fluidRow(
+                                              column(h5(p("November needles",style="color:white;text-align:center"),style="background-color:black;border-radius: 8px"),
+                                                     imageOutput("heatNeedles_N"),width = 6),
+                                              column(h5(p("May needles",style="color:white;text-align:center"),style="background-color:black;border-radius: 8px"),
+                                                     imageOutput("heatNeedles_M"),width = 6)
+                                            ),
+                                            fluidRow(
+                                              useShinyjs(),
                                               
+                                              br(),column(plotOutput("barplotNeedles"),width = 6),br(),
+                                              br(),column(fluidRow(tableOutput("tableDiffNeedles"),br(),tableOutput("tableGON")),width = 6),br()
                                               
-                                              h3(p(strong('Variance inflation factors',style="color:salmon")),align="center"),
-                                              fluidRow(column(verbatimTextOutput("VIF"),width=7),
-                                                       column(width=1),
-                                                       column(br(),
-                                                              br(),textOutput("Alarm"),
-                                                              br(),
-                                                              br(),width = 4,style="background-color:	#BFF7BB;border-left:8px solid green;border-top: 1px solid black;border-right:1px solid black;border-bottom: 1px solid black")),
-                                              br(),
-                                              hr(),
-                                              
-                                              h3(p(strong('Model summary',style="color:salmon")),align="center"),
-                                              
-                                              fluidRow(column(verbatimTextOutput("Model1"),width = 7),
-                                                       column(width=1),
-                                                       column(br(),
-                                                              br(),
-                                                              textOutput("Determination"),
-                                                              br(),
-                                                              br()
-                                                              ,width = 4,style="background-color:lavender;border-left:8px solid blue;border-top: 1px solid black;border-right:1px solid black;border-bottom: 1px solid black"))
-                                          ))
+                                            )
+                                            
+                                          ))),
+                                        tabPanel("Correlation",br(),sidebarLayout(
+                                          sidebarPanel(
+                                            br(),
+                                            actionButton("buttonCorN", "Generate correlation table"),
+                                            width = 3
+                                          ),mainPanel(
+                                            DT::dataTableOutput("tableCorN") %>% withSpinner(color="#0dc5c1")
+                                          ))),
+                                        tabPanel("GO search",br(),sidebarLayout(
+                                          sidebarPanel(
+                                            textInput("goN",p("Gene Onthology ID:",style="color:white; text-align:center")),
+                                          ),mainPanel(
+                                            DT::dataTableOutput("searchGO_N") %>% withSpinner(color="#0dc5c1")
+                                          )
+                                        ))
+                                        
+                                      ),br(),br(),
                              ),
                              tabPanel("Step 4",
                                       

@@ -20,9 +20,11 @@ tablaDiffRoots <-read.csv("www/microdiseccion_diffExpression.txt", sep = "\t", c
 tablaDiffEmbryos <-read.csv("www/embryo_differential.txt", sep = "\t", col.names = c("seqName","Comparative","Type","Log Fold Change"), stringsAsFactors = F )
 tablaSeqGoR <- read.csv("www/seq_gos_raiz.txt", sep = "\t",col.names = c("seqName","GoID"),stringsAsFactors = F)
 keggTable <- read.csv("www/kegg_total_transcriptome.txt", col.names = c("seqName","KeggID"),sep = "\t", stringsAsFactors = F )
+expressionNeedles <- read.csv("www/Needles_CPM_mean.txt", sep = "\t", row.names = 1 )
 
 source("Components/Comp_Tables.R")
 source("Components/Comp_embryos.R")
+source("Components/Comp_needle.R")
 source("Components/Comp_barplot.R")
 source("Components/Comp_corTable.R")
 source("Components/Comp_roots.R")
@@ -374,8 +376,43 @@ shinyServer(function(input, output) {
         }
         
     })
+
+    #Needles heatmaps
+    hide("heatNeedles_N")
+    output$heatNeedles_N <- renderImage({
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            heatMapNeedlesN(input$seqID_N)
+        }
+        list(src="www/needle_N.svg",width = "700px",
+             height = "530px",style="margin-left:-100px;margin-top:-100px")
+    },deleteFile = TRUE)
     
+    observeEvent(input$seqID_N,{
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            show("heatNeedles_N")
+        }else{
+            hide("heatNeedles_N")
+        }
+        
+    })
     
+    hide("heatNeedles_M")
+    output$heatNeedles_M <- renderImage({
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            heatMapNeedlesM(input$seqID_N)
+        }
+        list(src="www/needle_M.svg",width = "700px",
+             height = "530px",style="margin-left:-100px;margin-top:-100px")
+    },deleteFile = TRUE)
+    
+    observeEvent(input$seqID_N,{
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            show("heatNeedles_M")
+        }else{
+            hide("heatNeedles_M")
+        }
+        
+    })
     
     output$Conclusion1 <- renderText({
         
