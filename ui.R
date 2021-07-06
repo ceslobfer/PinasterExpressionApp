@@ -191,10 +191,11 @@ shinyUI(fluidPage(title = "BIO114",theme = shinytheme("cyborg"),setBackgroundIma
                                               uiOutput("descriptionSeqN"),br()
                                             ),
                                             fluidRow(
-                                              column(h5(p("November needles",style="color:white;text-align:center"),style="background-color:black;border-radius: 8px"),
-                                                     imageOutput("heatNeedles_N"),width = 6),
                                               column(h5(p("May needles",style="color:white;text-align:center"),style="background-color:black;border-radius: 8px"),
-                                                     imageOutput("heatNeedles_M"),width = 6)
+                                                     imageOutput("heatNeedles_M"),width = 6),
+                                              column(h5(p("November needles",style="color:white;text-align:center"),style="background-color:black;border-radius: 8px"),
+                                                     imageOutput("heatNeedles_N"),width = 6)
+                                              
                                             ),
                                             fluidRow(
                                               useShinyjs(),

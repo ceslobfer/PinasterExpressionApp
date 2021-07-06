@@ -21,6 +21,7 @@ tablaDiffEmbryos <-read.csv("www/embryo_differential.txt", sep = "\t", col.names
 tablaSeqGoR <- read.csv("www/seq_gos_raiz.txt", sep = "\t",col.names = c("seqName","GoID"),stringsAsFactors = F)
 keggTable <- read.csv("www/kegg_total_transcriptome.txt", col.names = c("seqName","KeggID"),sep = "\t", stringsAsFactors = F )
 expressionNeedles <- read.csv("www/Needles_CPM_mean.txt", sep = "\t", row.names = 1 )
+tablaDiffNeedles <-read.csv("www/needles_differential.txt", sep = "\t", col.names = c("seqName","Condition","Log Fold Change"), stringsAsFactors = F )
 
 source("Components/Comp_Tables.R")
 source("Components/Comp_embryos.R")
@@ -155,6 +156,28 @@ shinyServer(function(input, output) {
         )
     })
     
+    newCorTableN <- eventReactive(input$buttonCorN, {
+        if (input$seqID_N %in% row.names(expressionNeedles)){
+            tableCor <- seqCorNeedles(input$seqID_N)
+            tableCor
+        }
+    })
+    
+    
+    output$tableCorN <- DT::renderDataTable({
+        table <- newCorTableN()
+        DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
+            "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
+            filter = "top",
+            selection = 'multiple',
+            style = 'bootstrap',
+            class = 'cell-border stripe',
+            rownames = FALSE,
+        )
+    })
+    
     newCorTableR <- eventReactive(input$buttonCorR, {
         tablaCorResR <- NULL
         if (input$seqID_R %in% row.names(RM_data)){
@@ -193,6 +216,21 @@ shinyServer(function(input, output) {
             rownames = FALSE,
         )
     })
+
+    output$searchGO_N <- DT::renderDataTable({
+        table <- searchGoSeqN(input$goN)
+        DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#1c1b1b', 'color': '#1c1b1b'});",
+            "}"),dom = 'Bfrtip',pageLength = length(row.names(table)),buttons = c('copy', 'csv', 'excel', 'pdf', 'print')),
+            filter = "top",
+            selection = 'multiple',
+            style = 'bootstrap',
+            class = 'cell-border stripe',
+            rownames = FALSE,
+        )
+    })
+    
     output$searchGO_R <- DT::renderDataTable({
         table<-searchGoSeqR(input$goR)
         DT::datatable(table,extensions = 'Buttons',options = list(initComplete = JS(
@@ -217,6 +255,16 @@ shinyServer(function(input, output) {
         }
         
     })
+    output$tableKeggSeqN <- renderTable({
+        if (input$keggIDN %in% keggTable$KeggID) {
+            keggTable[which(keggTable$KeggID == input$keggIDN & keggTable$seqName %in% row.names(expressionNeedles)),]
+        }else{
+            if (input$seqID_N %in% row.names(expressionNeedles) & input$seqID_N %in% keggTable$seqName) {
+                keggTable[which(keggTable$seqName == input$seqID_N),]
+            }
+        }
+        
+    })
     
     output$tableGO <- renderTable({
         if (input$seqID %in% row.names(datosEmbriones) &&
@@ -229,6 +277,13 @@ shinyServer(function(input, output) {
         if (input$seqID_R %in% row.names(RM_data) &&
             input$seqID_R %in% tablaSeqGoR$seqName) {
             goTableDesR(input$seqID_R)
+        }
+        
+    })
+    output$tableGON <- renderTable({
+        if (input$seqID_N %in% row.names(expressionNeedles) &&
+            input$seqID_N %in% tablaSeqGo$seqName) {
+            goTableDesN(input$seqID_N)
         }
         
     })
@@ -290,6 +345,24 @@ shinyServer(function(input, output) {
         }
         
     })
+    #Barplot Needles
+    hide("barplotNeedles")
+    output$barplotNeedles<- renderPlot({
+        res <- plot.new()
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            res <- barplotNeedlesFunc(input$seqID_N)
+        }
+        res
+    })
+    
+    observeEvent(input$seqID_N,{
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            show("barplotNeedles")
+        }else{
+            hide("barplotNeedles")
+        }
+        
+    })
 #Legend plot Roots
     hide("legendtHeatR")
     output$legendtHeatR <- renderImage({
@@ -328,6 +401,25 @@ shinyServer(function(input, output) {
         
     })    
     
+    #Legend plot Needles
+    hide("legendtHeatN")
+    output$legendtHeatN <- renderImage({
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            legendColorsN(input$seqID_N)
+        }
+        list(src="www/legendN.svg",width = "310px",
+             height = "180px")
+    },deleteFile = TRUE)
+    
+    observeEvent(input$seqID_N,{
+        if (input$seqID_N %in% row.names(expressionNeedles)) {
+            show("legendtHeatN")
+        }else{
+            hide("legendtHeatN")
+        }
+        
+    })
+    
     output$diffRootTable <- renderTable({
         if (input$seqID_R %in% tablaDiffRoots$seqName) {
             tableDiffExpressionRoots(input$seqID_R)
@@ -337,6 +429,12 @@ shinyServer(function(input, output) {
     output$tableDiffEmbryos <- renderTable({
         if (input$seqID %in% tablaDiffEmbryos$seqName) {
             tableDiffExpressionEmbryos(input$seqID)
+        }
+        
+    })
+    output$tableDiffNeedles <- renderTable({
+        if (input$seqID_N %in% tablaDiffNeedles$seqName) {
+            tableDiffExpressionNeedles(input$seqID_N)
         }
         
     })
@@ -391,7 +489,7 @@ shinyServer(function(input, output) {
             heatMapNeedlesN(input$seqID_N)
         }
         list(src="www/needle_N.svg",width = "700px",
-             height = "530px",style="margin-left:-100px;margin-top:-100px")
+             height = "530px",style="margin-left:-100px;margin-top:-100px;margin-bottom:-50px")
     },deleteFile = TRUE)
     
     observeEvent(input$seqID_N,{
@@ -409,7 +507,7 @@ shinyServer(function(input, output) {
             heatMapNeedlesM(input$seqID_N)
         }
         list(src="www/needle_M.svg",width = "700px",
-             height = "530px",style="margin-left:-100px;margin-top:-100px")
+             height = "530px",style="margin-left:-100px;margin-top:-100px;margin-bottom:-50px")
     },deleteFile = TRUE)
     
     observeEvent(input$seqID_N,{
