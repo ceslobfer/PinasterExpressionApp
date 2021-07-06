@@ -1,5 +1,5 @@
 
-tablaDiff <-read.csv("www/needles_differential.txt", sep = "\t", col.names = c("seqName","Condition","Log Fold Change"), stringsAsFactors = F )
+tablaDiffNeedles <-read.csv("www/needles_differential.txt", sep = "\t", col.names = c("seqName","Condition","Log Fold Change"), stringsAsFactors = F )
 expressionNeedles <- read.csv("www/Needles_CPM_mean.txt", sep = "\t", row.names = 1 )
 
 
@@ -13,12 +13,11 @@ rescaleColor <- function(rangeExpression,minExpression,expression){
   color <- my_colors[value]
   return(color)
 }
-
 tableDiffExpressionNeedles <- function(seq){
   tablaRes <- data.frame()
-  if (seq %in% tablaDiff$seqName) {
-    tablaRes <-  tablaDiff[which(tablaDiff$seqName ==  seq),]
-    row.names(tablaRes) <- tablaRes$Tissue
+  if (seq %in% tablaDiffNeedles$seqName) {
+    tablaRes <-  tablaDiffNeedles[which(tablaDiffNeedles$seqName ==  seq),]
+    row.names(tablaRes) <- tablaRes$Comparative
     tablaRes$seqName <- NULL
     
   }  
@@ -69,4 +68,17 @@ heatMapNeedlesM <- function(seq){
     #res <- div(tags$img(src="raiz_heat_modC.svg",width="280px",height="660px",style="margin-right:-40px"))
   }
   return(res)
+}
+legendColorsN <- function(seq){
+  expression <- expressionNeedles[seq,]
+  minExpression <- min(expression)
+  maxExpression <- max(expression)
+  rangeExpression <- maxExpression-minExpression
+  svg(filename="www/legendN.svg",width = 20, height = 8)
+  plot(rep(0,100),col=fun_color_range(100),font.lab = 2,cex.lab=8,pch=15,cex=20,yaxt='n',ylab = "",xlab = "CPM",xaxt = 'n')
+  text(7,0,round(minExpression,digits = 2), cex= 6)
+  text(95,0,round(maxExpression,digits = 2), cex= 6)
+  dev.off()
+  #res <- div(tags$img(src="legendR.svg",width="300px",height="180px"))
+  #return(res)
 }
