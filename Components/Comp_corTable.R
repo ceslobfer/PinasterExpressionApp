@@ -7,11 +7,11 @@ RM_data <- read.csv("www/CPM_raizMicrodiseccion_RM_mean.txt", sep = "\t", row.na
 module_dataE <- read.csv("www/seq_module_file_Embryos.txt", sep = "\t",col.names = c("seqName","module"), stringsAsFactors = F )
 tablaSeqDesRoots <- read.csv("www/seq_description_raiz.txt", sep = "\t",col.names = c("seq","description"), row.names = 1,stringsAsFactors = F)
 hubsEmbrio <- read.csv("www/hubModule.txt", sep = "\t",col.names = c("seqName","module"),stringsAsFactors = F)
+hubsNeedles <- read.csv("www/hubGenes_needles.txt", sep = "\t",col.names = c("seqName","module"),stringsAsFactors = F)
 goEmbrios <- read.csv("www/seq_go_embrios_join.txt", sep = "\t",col.names = c("seqName","go"),row.names = 1,stringsAsFactors = F)
 expressionNeedles <- read.csv("www/Needles_CPM_mean.txt", sep = "\t", row.names = 1 )
 module_dataN <- read.csv("www/needles_module.txt", sep = "\t",col.names = c("seqName","module"), stringsAsFactors = F )
 
-seq <- "ppt_212074"
 seqCorEmbryos <- function(seq){
   tablaCor <- data.frame(stringsAsFactors = F)
   seqQuery <- as.numeric(datosEmbriones[seq,])
@@ -88,7 +88,7 @@ seqCorNeedles <- function(seq){
     for (seq2 in tablaModule$seqName) {
       if (seq2!=seq) {
         correlation <- cor.test(seqQuery,as.numeric(expressionNeedles[seq2,]))
-        if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
+        if (correlation$p.value < 0.05 & seq2 %in% hubsNeedles$seqName){
           if (seq2 %in% row.names(goEmbrios)) {
             tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,goEmbrios[seq2,],TRUE),stringsAsFactors = F)
             
@@ -97,7 +97,7 @@ seqCorNeedles <- function(seq){
             
           }
         }
-        if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
+        if (correlation$p.value < 0.05 & !(seq2 %in% hubsNeedles$seqName)){
           if (seq2 %in% row.names(goEmbrios)) {
             tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,goEmbrios[seq2,],FALSE),stringsAsFactors = F)
             
@@ -113,13 +113,13 @@ seqCorNeedles <- function(seq){
     tablaCor <- transform(tablaCor, Correlation.pvalue = as.numeric(Correlation.pvalue))
     tablaCor <- tablaCor[order(abs(tablaCor$Correlation.value), decreasing = TRUE),]
   }else{
-    for (seq2 in row.names(datosEmbriones)) {
+    for (seq2 in row.names(expressionNeedles)) {
       if (seq2!=seq) {
-        correlation <- cor.test(seqQuery,as.numeric(datosEmbriones[seq2,]))
-        if (correlation$p.value < 0.05 & seq2 %in% hubsEmbrio$seqName){
+        correlation <- cor.test(seqQuery,as.numeric(expressionNeedles[seq2,]))
+        if (correlation$p.value < 0.05 & seq2 %in% hubsNeedles$seqName){
           tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,TRUE),stringsAsFactors = F)
         }
-        if (correlation$p.value < 0.05 & !(seq2 %in% hubsEmbrio$seqName)){
+        if (correlation$p.value < 0.05 & !(seq2 %in% hubsNeedles$seqName)){
           tablaCor <- rbind.data.frame(tablaCor,c(seq2, tablaSeqDes[seq2,],correlation$estimate,correlation$p.value,FALSE),stringsAsFactors = F)
         }
       }
